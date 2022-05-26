@@ -1,7 +1,5 @@
 create table user(
-    id identity primary key, 
-    slackuser text, 
+    slackuser varchar(50) primary key, 
     name text, 
     defaultKm integer
     );
-create unique index user_slack on user(slackuser);

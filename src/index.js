@@ -1,4 +1,5 @@
 import Bolt from '@slack/bolt';
+import * as UserRepo from './user.js';
 
 
 const app = new Bolt.App({
@@ -27,6 +28,16 @@ app.command('/bike', async ({ command, ack, respond }) => {
             route = 'setup';
             extraparams = param.split(' ')[1]; //Get the first element after the first space
             console.log('registering user with distance ' + extraparams)
+            let success = UserRepo.setupUser({
+                name: command.user_name, 
+                slackUser: command.user_id, 
+                defaultKm: parseInt(extraparams), 
+            });
+
+            if (!success){
+                route = 'error';
+                errormsg = "Could not setup the user. Check the bot-logs, since there is something wrong with the persistence layer";
+            }
         }
     }
 
@@ -39,7 +50,6 @@ app.command('/bike', async ({ command, ack, respond }) => {
         })
         
     } else {
-        console.log(command);
         await respond({
             response_type: 'ephemeral',
             text: `${command.text}`,

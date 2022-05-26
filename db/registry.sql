@@ -1,7 +1,7 @@
 create table registry(
-    rowid identity primary key, 
-    userid integer, 
+    rowid integer primary key AUTOINCREMENT, 
+    slackuser text, 
     registerdate date, 
     km integer
 );
-create index registry_userid on registry(userid);
+create index registry_slackuser on registry(slackuser);

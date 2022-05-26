@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@slack/bolt": "^3.11.1"
+    "@slack/bolt": "^3.11.1",
+    "sqlite3": "^5.0.8"
   }
 }
