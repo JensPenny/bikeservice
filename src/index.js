@@ -5,15 +5,46 @@ const app = new Bolt.App({
     token: process.env.SLACK_BOT_TOKEN,
     signingSecret: process.env.SLACK_SIGNING_SECRET,
     appToken: process.env.SLACK_APP_TOKEN,
-    socketMode: true, 
+    socketMode: true,
 });
 
 //Stuff goes here
 app.command('/bike', async ({ command, ack, respond }) => {
-    // Acknowledge command request
     await ack();
-    console.log(command);
-    await respond(`${command.text}`);
+
+    const param = command.text;
+
+    let route = '';
+    let extraparams = '';
+    let errormsg = '';
+    if (param.startsWith('setup')) {
+        let matches = param.match(/setup [0-9]+/);
+        console.log(matches);
+        if (!matches) {
+            route = 'error';
+            errormsg = "Invalid use of setup. Attach a default distance in km for your one-way commute, like '/bike setup 6'"
+        } else {
+            route = 'setup';
+            extraparams = param.split(' ')[1]; //Get the first element after the first space
+            console.log('registering user with distance ' + extraparams)
+        }
+    }
+
+    if (route === 'error') {
+        console.log('found error: ' + errormsg );
+        await respond({
+            response_type: 'ephemeral', 
+            icon_emoji: ':red_cross:', 
+            text: errormsg,
+        })
+        
+    } else {
+        console.log(command);
+        await respond({
+            response_type: 'ephemeral',
+            text: `${command.text}`,
+        });
+    }
 });
 
 (async () => {
