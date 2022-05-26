@@ -1,4 +1,4 @@
-import sqlite3 from "sqlite3";
+import * as dbTools from "./dbtools.js"
 
 /**
  * Create or replace a user
@@ -10,16 +10,9 @@ export function setupUser(userObject) {
 }
 
 function createOrReplaceUser(userObject) {
-    const db = new sqlite3.Database("db.sqlite", sqlite3.OPEN_READWRITE, (err) => {
-        if (err) {
-            console.error("couldn't open database :( " + err);
-            return false;
-        } else {
-            console.log('connected to db');
-        }
-    });
+    const db = dbTools.openDb();
 
     db.run('REPLACE INTO user (slackuser, name, defaultKm) VALUES(?, ?, ?)', [userObject.slackUser, userObject.name, userObject.defaultKm]);
-    console.log('saved user ' + JSON. stringify(userObject));
+    console.log('saved user ' + JSON.stringify(userObject));
     return true;
 }
