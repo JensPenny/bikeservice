@@ -71,14 +71,13 @@ app.command('/bike', async ({ command, ack, respond }) => {
                 }
             }
 
-            console.log('registering commute for user ' + command.user_id + ' km: ' + kmInCommand + " - date: " + registerDate);
-
             //todo: log error if possible
-            let response = RegisterRepo.registerCommute(command.user_id, registerDate, kmInCommand);
-            console.log(JSON.stringify(response));
+            let response = await RegisterRepo.registerCommute(command.user_id, registerDate, kmInCommand);
             if (!response.success) {
                 route = 'error';
                 errormsg = response.msg;
+            } else {
+                errormsg = response.msg; //abuse the errormsg as a normal msg
             }
         }
     } else if (param.startsWith('help')) {
@@ -101,7 +100,7 @@ app.command('/bike', async ({ command, ack, respond }) => {
         } else if (route === 'register') {
             await respond({
                 response_type: 'ephemeral',
-                text: `Your user has been set up. You can start registering commutes`,
+                text: `You have registered a commute: ${errormsg}`,
             });
         } else if (route === 'help') {
             await respond({

@@ -1,6 +1,6 @@
 import * as dbTools from "./dbtools.js"
 
-export function registerCommute(slackuser, registerdate, km) {
+export async function registerCommute(slackuser, registerdate, km) {
     if (!slackuser) {
         return {
             success: false,
@@ -15,7 +15,9 @@ export function registerCommute(slackuser, registerdate, km) {
 
     const db = dbTools.openDb();
     if (!km) {
-        let result = getResult(db, slackuser);
+        console.log('before result');
+        let result = await getResult(db, slackuser);
+        console.log('after result' + JSON.stringify(result));
         if (!result.success) {
             return result; //Bubble the error
         }
@@ -26,6 +28,8 @@ export function registerCommute(slackuser, registerdate, km) {
                 success: false,
                 msg: "Couldn't query default km's",
             }
+        } else {
+            km = defaultKm;
         }
     }
     if (km < 3) {
@@ -35,29 +39,47 @@ export function registerCommute(slackuser, registerdate, km) {
         };
     }
 
-    db.run('INSERT INTO registry (slackuser, registerdate, km) VALUES(?, ?, ?)', [slackuser, dateToRegister, km]);
-    return {
-        success: true,
-        msg: 'inserted commute: ' + slackuser + '-' + dateToRegister + '-' + km
-    };
+    let insertResult = await persistRegistration(db, slackuser, dateToRegister, km);
+    console.log('nserted: ' + JSON.stringify(insertResult));
+    return insertResult;
 }
 
-//todo not working
+/**
+ * select the km's associated with the user
+ */
 async function getResult(db, slackuser) {
-    try {
-        console.log('start fetching default kms');
-        const row = await db.get("SELECT defaultKm FROM user WHERE slackuser = ?", [slackuser]);
-        console.log('found ' + JSON.stringify(row));
-        return {
-            success: true, 
-            payload: parseInt(row.defaultKm),
-        }
-    } catch (err) {
-        console.error('error q: ' + err)
-        return {
-            success: false,
-            msg: "Couldn't query default km's: " + err,
-            payload: undefined
-        };
-    }
+    return new Promise((resolve, reject) => {
+        db.get("SELECT defaultKm FROM user WHERE slackuser = ?", [slackuser], (err, row) => {
+            if (err) {
+                return reject({
+                    success: false,
+                    msg: "Couldn't query default km's: " + err,
+                    payload: undefined,        
+                });
+            };
+            console.log('resolving ' + row.defaultKm);
+            return resolve({
+                success: true, 
+                payload: parseInt(row.defaultKm),    
+            });
+        });
+    });
+}
+
+/**
+ * Persist the registration for a given user
+ */
+async function persistRegistration(db, slackuser, dateToRegister, km) {
+    return new Promise((resolve, reject) => {
+        db.run('INSERT INTO registry (slackuser, registerdate, km) VALUES(?, ?, ?)', [slackuser, dateToRegister, km], (err, row) => {
+            if (err) {
+                return reject({err});
+            } else {
+                return resolve({
+                    success: true,
+                    msg: `User ${slackuser} registered a commute for ${km} km on ${dateToRegister}`,               
+                })
+            }
+        });
+    })
 }
