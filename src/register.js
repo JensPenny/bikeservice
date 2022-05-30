@@ -71,7 +71,7 @@ async function getResult(db, slackuser) {
  */
 async function persistRegistration(db, slackuser, dateToRegister, km) {
     return new Promise((resolve, reject) => {
-        db.run('INSERT INTO registry (slackuser, registerdate, km) VALUES(?, ?, ?)', [slackuser, dateToRegister, km], (err, row) => {
+        db.run('REPLACE INTO registry (slackuser, registerdate, km) VALUES(?, ?, ?)', [slackuser, dateToRegister, km], (err, row) => {
             if (err) {
                 return reject({err});
             } else {
