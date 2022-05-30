@@ -5,3 +5,4 @@ create table registry(
     km integer
 );
 create index registry_slackuser on registry(slackuser);
+create unique index registry_slackuser_date on registry(slackuser, registerdate);
