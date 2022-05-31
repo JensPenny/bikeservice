@@ -1,6 +1,7 @@
 import Bolt from '@slack/bolt';
 import * as UserRepo from './user.js';
 import * as RegisterRepo from './register.js';
+import * as Export from './export.js';
 
 
 const app = new Bolt.App({
@@ -80,6 +81,19 @@ app.command('/bike', async ({ command, ack, respond }) => {
                 errormsg = response.msg; //abuse the errormsg as a normal msg
             }
         }
+    } else if (param.startsWith('csv')) {
+        let month = 5; //may in normal-people-speak
+        let year = 2022; 
+        let csv = await Export.exportAsCsv(command.user_id, month - 1, year); //Month starts at 0 - js sucks
+        console.log(`found CSV ${csv}`);
+
+        if (!csv || csv == '') {
+            route = 'error';
+            errormsg = 'could not find anything to export';
+        } else {
+            route = 'csv';
+            errormsg = csv;
+        }
     } else if (param.startsWith('help')) {
         route = 'help';
     }
@@ -109,6 +123,11 @@ app.command('/bike', async ({ command, ack, respond }) => {
                 * Use 'reg or register to register a commute. 
                 * Use 'help' to see the list of commands.`,
             });
+        } else if (route == 'csv') {
+            await respond({
+                response_type: 'ephemeral',
+                text: `\`\`\`${errormsg}\`\`\``, //Respond with the csv in a code block
+            })
         } else {
             await respond({
                 response_type: 'ephemeral',
