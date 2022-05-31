@@ -82,10 +82,22 @@ app.command('/bike', async ({ command, ack, respond }) => {
             }
         }
     } else if (param.startsWith('csv')) {
-        let month = 5; //may in normal-people-speak
-        let year = 2022;
-        let csv = await Export.exportAsCsv(command.user_id, month - 1, year); //Month starts at 0 - js sucks
-        console.log(`found CSV ${csv}`);
+        extraparams = param.split(' ')[1]; //Get the first element after the first space
+
+        let requestDate = undefined;
+        if (extraparams) {
+            if (param.match(/(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))/)) {
+                requestDate = new Date(param);
+            }
+        }
+
+        if (!requestDate) {
+            requestDate = new Date();
+        }
+
+        let month = requestDate.getMonth(); //may in normal-people-speak
+        let year = requestDate.getFullYear();
+        let csv = await Export.exportAsCsv(command.user_id, month, year); //Month starts at 0 - js sucks
 
         if (!csv || csv == '') {
             route = 'error';

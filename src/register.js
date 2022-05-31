@@ -40,7 +40,7 @@ export async function registerCommute(slackuser, registerdate, km) {
     }
 
     let insertResult = await persistRegistration(db, slackuser, dateToRegister, km);
-    console.log('nserted: ' + JSON.stringify(insertResult));
+    console.log('Inserted: ' + JSON.stringify(insertResult));
     return insertResult;
 }
 
