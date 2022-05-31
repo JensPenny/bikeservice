@@ -83,7 +83,7 @@ app.command('/bike', async ({ command, ack, respond }) => {
         }
     } else if (param.startsWith('csv')) {
         let month = 5; //may in normal-people-speak
-        let year = 2022; 
+        let year = 2022;
         let csv = await Export.exportAsCsv(command.user_id, month - 1, year); //Month starts at 0 - js sucks
         console.log(`found CSV ${csv}`);
 
@@ -119,8 +119,9 @@ app.command('/bike', async ({ command, ack, respond }) => {
         } else if (route === 'help') {
             await respond({
                 response_type: 'ephemeral',
-                text: `* Use 'setup' to set up a default amount of KM. 
-                * Use 'reg or register to register a commute. 
+                text: `* Use 'setup' to set up a default amount of km. Use the total (there and back)
+                * Use 'reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
+                * Use 'csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
                 * Use 'help' to see the list of commands.`,
             });
         } else if (route == 'csv') {
@@ -132,8 +133,9 @@ app.command('/bike', async ({ command, ack, respond }) => {
             await respond({
                 response_type: 'ephemeral',
                 text: `This command is not recognized. 
-            * Use 'setup' to set up a default amount of KM. 
-            * Use 'reg or register to register a commute. 
+            * Use 'setup' to set up a default amount of km. Use the total (there and back)
+            * Use 'reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
+            * Use 'csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
             * Use 'help' to see the list of commands.`,
             });
         }
