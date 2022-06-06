@@ -1,8 +1,7 @@
 import sqlite3 from "sqlite3";
 import fs from 'fs';
 
-const dbPath = "./db/bikeservice.db";        //Path for local testing
-//const dbPath = "/opt/bikeservice/service.db";  //Path for docker containers 
+const dbPath = "/opt/bikeservice/service.db";  //Path for the db 
 
 /**
  * @returns a db connection object. Don't forget to close it.
