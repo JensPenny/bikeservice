@@ -1,8 +1,8 @@
 # LTS version of node
 FROM node:16
 
-# Create the location where we will store the DB
-RUN mkdir /opt/bikeservice/
+# Create the location where we will store the DB - not needed atm since we store the db in src
+# RUN mkdir /opt/bikeservice/
 
 # Create the location where we will install the service
 WORKDIR /usr/bikeservice/src
