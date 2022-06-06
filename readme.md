@@ -11,5 +11,10 @@ export SLACK_SIGNING_SECRET=<your-signing-secret>
 export SLACK_BOT_TOKEN=<your-bot-token>: starts with xoxb  
 export SLACK_APP_TOKEN=<your-app-token>  
 
-# todo
-* create a docker config
+# Docker Config
+docker build . -t penny/bikeservice
+
+docker run -e SLACK_BOT_TOKEN=<your-bot-token> \
+-e SLACK_SIGNING_SECRET=<your-signing-secret> \
+-e SLACK_APP_TOKEN=<your-app-token> \
+-p 3000:3000 -d penny/bikeservice
