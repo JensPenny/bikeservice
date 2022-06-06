@@ -16,7 +16,7 @@ export async function registerCommute(slackuser, registerdate, km) {
     const db = dbTools.openDb();
     if (!km) {
         console.log('before result');
-        let result = await getResult(db, slackuser);
+        let result = await getResult(db, slackuser).catch((err) => { return err;}); //We have pre-defined the error, so we just pass it through
         console.log('after result' + JSON.stringify(result));
         if (!result.success) {
             return result; //Bubble the error
@@ -40,6 +40,7 @@ export async function registerCommute(slackuser, registerdate, km) {
     }
 
     let insertResult = await persistRegistration(db, slackuser, dateToRegister, km);
+    db.close();
     console.log('Inserted: ' + JSON.stringify(insertResult));
     return insertResult;
 }
@@ -57,6 +58,13 @@ async function getResult(db, slackuser) {
                     payload: undefined,        
                 });
             };
+            if (!row) {
+                return reject({
+                    success: false, 
+                    msg: "Use /bike setup <km> or use /bike reg <km> to register the amount of default km's", 
+                    payload: undefined,
+                })
+            }
             console.log('resolving ' + row.defaultKm);
             return resolve({
                 success: true, 

@@ -2,7 +2,7 @@ import Bolt from '@slack/bolt';
 import * as UserRepo from './user.js';
 import * as RegisterRepo from './register.js';
 import * as Export from './export.js';
-
+import { initializeDb } from './dbtools.js';
 
 const app = new Bolt.App({
     token: process.env.SLACK_BOT_TOKEN,
@@ -10,8 +10,6 @@ const app = new Bolt.App({
     appToken: process.env.SLACK_APP_TOKEN,
     socketMode: true,
 });
-
-
 
 //Stuff goes here
 app.command('/bike', async ({ command, ack, respond }) => {
@@ -158,6 +156,7 @@ app.command('/bike', async ({ command, ack, respond }) => {
 
 (async () => {
     // Start your app
+    await initializeDb();
     await app.start(process.env.PORT || 3000);
 
     console.log('⚡️ Bike registration app is running!');

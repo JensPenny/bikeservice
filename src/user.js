@@ -13,6 +13,7 @@ function createOrReplaceUser(userObject) {
     const db = dbTools.openDb();
 
     db.run('REPLACE INTO user (slackuser, name, defaultKm) VALUES(?, ?, ?)', [userObject.slackUser, userObject.name, userObject.defaultKm]);
+    db.close();
     console.log('saved user ' + JSON.stringify(userObject));
     return true;
 }
