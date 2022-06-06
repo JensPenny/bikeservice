@@ -9,7 +9,14 @@
 # Necessary environment variables  
 export SLACK_SIGNING_SECRET=<your-signing-secret>  
 export SLACK_BOT_TOKEN=<your-bot-token>: starts with xoxb  
-export SLACK_APP_TOKEN=<your-app-token>  
+export SLACK_APP_TOKEN=<your-app-token>
+
+# For local testing
+The database itself gets stored under /opt/bikeservice. This is so you can swap out the volume on the container with ease. 
+For local testing you probably don't have root under /opt/. Just create the folder and give your local user rights to this folder.  
+
+sudo mkdir /opt/bikeservice  
+sudo chown -R $USER:$USER /opt/bikeservice  
 
 # Docker Config
 docker build . -t penny/bikeservice
