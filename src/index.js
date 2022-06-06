@@ -9,6 +9,27 @@ const app = new Bolt.App({
     signingSecret: process.env.SLACK_SIGNING_SECRET,
     appToken: process.env.SLACK_APP_TOKEN,
     socketMode: true,
+    //Specific error handlers
+    dispatchErrorHandler: ({ error, logger, response }) => {
+        logger.error(`dispatch error: ${error}`);
+        response.writeHead(404);
+        response.write("Path not found");
+        response.end();
+      },
+      processEventErrorHandler: ({ error, logger, response }) => {
+        logger.error(`Uncaught error: ${error}`);
+        // acknowledge it anyway!
+        response.writeHead(200);
+        response.end();
+        return true;
+      },
+      unhandledRequestHandler: async ({ logger, response }) => {
+        logger.info('The service did not respond to your request in 2 seconds. Aborting request...');
+        // acknowledge it anyway!
+        response.writeHead(200);
+        response.end();
+      },
+  
 });
 
 //Stuff goes here
