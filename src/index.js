@@ -15,21 +15,21 @@ const app = new Bolt.App({
         response.writeHead(404);
         response.write("Path not found");
         response.end();
-      },
-      processEventErrorHandler: ({ error, logger, response }) => {
+    },
+    processEventErrorHandler: ({ error, logger, response }) => {
         logger.error(`Uncaught error: ${error}`);
         // acknowledge it anyway!
         response.writeHead(200);
         response.end();
         return true;
-      },
-      unhandledRequestHandler: async ({ logger, response }) => {
+    },
+    unhandledRequestHandler: async ({ logger, response }) => {
         logger.info('The service did not respond to your request in 2 seconds. Aborting request...');
         // acknowledge it anyway!
         response.writeHead(200);
         response.end();
-      },
-  
+    },
+
 });
 
 //Stuff goes here
@@ -65,42 +65,31 @@ app.command('/bike', async ({ command, ack, respond }) => {
     } else if (param.startsWith('reg')) {
         //Regex: reg(ister)?( [0-9^-]*)?( \d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))?
         //Matches: reg or register. Optionally an amount (km). Optionally a date (registration)
-        let matches = param.match(/reg(ister)?( [0-9^-]*)?( \d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))?/);
+        let regexKm = /(\s[0-9]+\s)/; //space<number>space regex for amount of kms
+        let regexDate = /(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))/; //yyyy-mm-dd
 
-        if (!matches) {
+        route = 'register';
+
+        let kmMatches = param.match(regexKm);
+        let kmAsParam = undefined;
+        if (kmMatches) {
+            console.log(`found km: ${kmMatches}`)
+            kmAsParam = parseInt(kmMatches[0]);
+        }
+
+        let registerDateMatches = param.match(regexDate);
+        let registerDateAsParam = undefined;
+        if (registerDateMatches) {
+            console.log(`found date: ${registerDateMatches}`)
+            registerDateAsParam = registerDateMatches[0];
+        }
+
+        let response = await RegisterRepo.registerCommute(command.user_id, registerDateAsParam, kmAsParam);
+        if (!response.success) {
             route = 'error';
-            errormsg = `Invalid use of reg or register. Only use 'register' to register the default km today, or add an amount in km optionally, and add a date optionally.
-            An example of a full command is '/bike reg 10 2022-06-01. Another example is /bike reg 2022-06-02`;
+            errormsg = response.msg;
         } else {
-            route = 'register';
-            extraparams = param.split(' '); //array here possibly
-
-            let kmInCommand = undefined;
-            let registerDate = undefined;
-            if (extraparams[1]) {
-                let param = extraparams[1];
-                if (param.match(/[0-9^-]/)) {
-                    kmInCommand = parseInt(param);
-                } else if (param.match(/(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))/)) {
-                    registerDate = param;
-                }
-            }
-
-            if (extraparams[2]) {
-                let param = extraparams[2];
-                if (param.match(/(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))/)) {
-                    registerDate = param;
-                }
-            }
-
-            //todo: log error if possible
-            let response = await RegisterRepo.registerCommute(command.user_id, registerDate, kmInCommand);
-            if (!response.success) {
-                route = 'error';
-                errormsg = response.msg;
-            } else {
-                errormsg = response.msg; //abuse the errormsg as a normal msg
-            }
+            errormsg = response.msg; //abuse the errormsg as a normal msg
         }
     } else if (param.startsWith('csv')) {
         extraparams = param.split(' ')[1]; //Get the first element after the first space
