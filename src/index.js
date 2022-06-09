@@ -1,7 +1,8 @@
 import Bolt from '@slack/bolt';
 import * as UserRepo from './user.js';
 import * as RegisterRepo from './register.js';
-import * as Export from './export.js';
+import * as CSV from './csvExport.js';
+import * as XLS from './excelExport.js';
 import { initializeDb } from './dbtools.js';
 
 const app = new Bolt.App({
@@ -107,7 +108,7 @@ app.command('/bike', async ({ command, ack, respond }) => {
 
         let month = requestDate.getMonth(); //may in normal-people-speak
         let year = requestDate.getFullYear();
-        let csv = await Export.exportAsCsv(command.user_id, month, year); //Month starts at 0 - js sucks
+        let csv = await CSV.exportAsCsv(command.user_id, month, year); //Month starts at 0 - js sucks
 
         if (!csv || csv == '') {
             route = 'error';
@@ -116,6 +117,10 @@ app.command('/bike', async ({ command, ack, respond }) => {
             route = 'csv';
             errormsg = csv;
         }
+    } else if (param.startsWith('xls')) {
+        let requestDate = new Date();
+        let xlsResult = await XLS.exportAsXlsx(command.user_id, command.user_name, requestDate); //Month starts at 0 - js sucks
+
     } else if (param.startsWith('help')) {
         route = 'help';
     }

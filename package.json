@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@slack/bolt": "^3.11.1",
+    "exceljs": "^4.3.0",
     "sqlite3": "^5.0.8"
   }
 }
