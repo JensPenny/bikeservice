@@ -6,6 +6,12 @@ import * as XLS from './excelExport.js';
 import { initializeDb } from './dbtools.js';
 import fs from 'fs';
 
+const commandText = `* Use 'setup' to set up a default amount of km. Use the total (there and back)
+* Use 'reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
+* Use 'csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
+* Use 'xls' to export the data for a given month to excel. Add a date in yyyy-mm-dd to get the export for that month. Bikebot will send the file to you.
+* Use 'help' to see the list of commands.`
+
 const app = new Bolt.App({
     token: process.env.SLACK_BOT_TOKEN,
     signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -119,7 +125,19 @@ app.command('/bike', async ({ command, ack, respond }) => {
             errormsg = csv;
         }
     } else if (param.startsWith('xls')) {
-        let requestDate = new Date();
+        extraparams = param.split(' ')[1]; //Get the first element after the first space
+
+        let requestDate = undefined;
+        if (extraparams) {
+            if (param.match(/(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))/)) {
+                requestDate = new Date(param);
+            }
+        }
+
+        if (!requestDate) {
+            requestDate = new Date();
+        }
+
         let xlsResult = await XLS.exportAsXlsx(command.user_id, command.user_name, requestDate); //Month starts at 0 - js sucks
         if (xlsResult.success) {
             let filepath = xlsResult.file;
@@ -167,11 +185,7 @@ app.command('/bike', async ({ command, ack, respond }) => {
         } else if (route === 'help') {
             await respond({
                 response_type: 'ephemeral',
-                text: `
-                * Use 'setup' to set up a default amount of km. Use the total (there and back)
-                * Use 'reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
-                * Use 'csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
-                * Use 'help' to see the list of commands.`,
+                text: commandText,
             });
         } else if (route == 'csv') {
             await respond({
@@ -186,12 +200,7 @@ app.command('/bike', async ({ command, ack, respond }) => {
         } else {
             await respond({
                 response_type: 'ephemeral',
-                text: `
-            This command is not recognized. 
-            * Use 'setup' to set up a default amount of km. Use the total (there and back)
-            * Use 'reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
-            * Use 'csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
-            * Use 'help' to see the list of commands.`,
+                text: `This command is not recognized.\n${commandText}`,
             });
         }
     }
