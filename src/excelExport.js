@@ -18,7 +18,6 @@ export async function exportAsXlsx(user, name, requestDate) {
         sheet.getRow(14).getCell('C').value = fullMonth;
         sheet.getRow()
         for (const reg of registrations) {
-            console.log(reg);
             let row = sheet.getRow(currentRow);
             row.getCell('B').value = reg[0];
             row.getCell('C').value = reg[1];
@@ -30,18 +29,18 @@ export async function exportAsXlsx(user, name, requestDate) {
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
         }
-        let result = await workbook.xlsx.writeFile(`${dir}/${user}-${month}-${year}.xlsx`);
-        console.log(result);
+        let exportFileName = `${dir}/${user}-${month}-${year}.xlsx`;
+        await workbook.xlsx.writeFile(exportFileName);
+
+        return {
+            success: true,
+            file: exportFileName,
+        }
     } catch (err) {
         console.log(`Could not open xls file: ${err}`);
         return {
             success: false,
             msg: `Error creating xls file: ${err}`,
         }
-    }
-
-    return {
-        success: true,
-        msg: 'exported xls',
     }
 }

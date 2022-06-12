@@ -8,7 +8,7 @@ export async function exportAsCsv(slackuser, month, year) {
         let csv = fullExportable.map(item => item.join(','))
             .join('\n');
 
-        console.log('csv: ' + csv);
+        //console.log('csv: ' + csv);
         return csv;
     } catch (err) {
         console.error(err);
@@ -30,7 +30,6 @@ export async function exportAsCsv(slackuser, month, year) {
 
     //let registrations = rows.map(({registerdate, km}) => {registerdate, km}); //I wouldn't know why destructuring like this wouldnt work
     let registrations = rows.map((row) => {
-        console.log(JSON.stringify(row));
         return (({ registerdate, km }) => ([new Date(registerdate), km]))(row); //...but this shit does
     });
     //console.log(`mapped regs${JSON.stringify(registrations)}`);
@@ -52,7 +51,6 @@ export async function exportAsCsv(slackuser, month, year) {
 
     //Fill the registered days in the empty days
     filtered.forEach(registration => {
-        console.log(registration);
         fullExportable[registration[0] - 1] = registration;
     });
 

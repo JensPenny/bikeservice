@@ -4,6 +4,7 @@ import * as RegisterRepo from './register.js';
 import * as CSV from './csvExport.js';
 import * as XLS from './excelExport.js';
 import { initializeDb } from './dbtools.js';
+import fs from 'fs';
 
 const app = new Bolt.App({
     token: process.env.SLACK_BOT_TOKEN,
@@ -120,6 +121,26 @@ app.command('/bike', async ({ command, ack, respond }) => {
     } else if (param.startsWith('xls')) {
         let requestDate = new Date();
         let xlsResult = await XLS.exportAsXlsx(command.user_id, command.user_name, requestDate); //Month starts at 0 - js sucks
+        if (xlsResult.success) {
+            let filepath = xlsResult.file;
+            try {
+                let uploaded = await app.client.files.upload({
+                    channels: command.user_id,
+                    file: fs.createReadStream(filepath),
+                    title: `your xls export for ${requestDate}`,
+                    filename: filepath, 
+                    filetype: 'xlsx',
+                });
+            } catch (err) {
+                route = 'error';
+                errormsg = err.message;
+            }
+
+            route = 'xls';
+        } else {
+            route = 'error';
+            errormsg = xlsResult.msg;
+        }
 
     } else if (param.startsWith('help')) {
         route = 'help';
@@ -146,7 +167,8 @@ app.command('/bike', async ({ command, ack, respond }) => {
         } else if (route === 'help') {
             await respond({
                 response_type: 'ephemeral',
-                text: `* Use 'setup' to set up a default amount of km. Use the total (there and back)
+                text: `
+                * Use 'setup' to set up a default amount of km. Use the total (there and back)
                 * Use 'reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
                 * Use 'csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
                 * Use 'help' to see the list of commands.`,
@@ -156,10 +178,16 @@ app.command('/bike', async ({ command, ack, respond }) => {
                 response_type: 'ephemeral',
                 text: `\`\`\`${errormsg}\`\`\``, //Respond with the csv in a code block
             })
+        } else if (route == 'xls') {
+            await respond({
+                response_type: 'ephemeral', 
+                text: 'We have sent the file in a direct message',
+            })
         } else {
             await respond({
                 response_type: 'ephemeral',
-                text: `This command is not recognized. 
+                text: `
+            This command is not recognized. 
             * Use 'setup' to set up a default amount of km. Use the total (there and back)
             * Use 'reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
             * Use 'csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
