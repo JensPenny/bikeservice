@@ -54,26 +54,35 @@ app.command('/bike', async ({ command, ack, respond }) => {
 
         if (!matches) {
             route = 'error';
-            errormsg = "Invalid use of setup. Attach a default distance in km for your one-way commute, like '/bike setup 6'"
+            errormsg = "Invalid use of setup. Attach a default distance in km for your two-way commute, like '/bike setup 6'"
         } else {
             route = 'setup';
             extraparams = param.split(' ')[1]; //Get the first element after the first space
-            console.log('registering user with distance ' + extraparams)
-            let success = UserRepo.setupUser({
-                name: command.user_name,
-                slackUser: command.user_id,
-                defaultKm: parseInt(extraparams),
-            });
 
-            if (!success) {
+            let km = parseInt(extraparams);
+            let success = false;
+            if (km < 3) {
+                console.log(`couldn't register user ${command.user_name} with default ${km} km`)
                 route = 'error';
-                errormsg = "Could not setup the user. Check the bot-logs, since there is something wrong with the persistence layer";
+                errormsg = "the amount of km registered needs to be at least 3 km's for the timesheet (don't blame me)";
+            } else {
+                console.log('registering user with distance ' + extraparams);
+                success = UserRepo.setupUser({
+                    name: command.user_name,
+                    slackUser: command.user_id,
+                    defaultKm: km,
+                });   
+                
+                if (!success) {
+                    route = 'error';
+                    errormsg = "Could not setup the user. Check the bot-logs, since there is something wrong with the persistence layer";
+                }    
             }
         }
     } else if (param.startsWith('reg')) {
         //Regex: reg(ister)?( [0-9^-]*)?( \d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))?
         //Matches: reg or register. Optionally an amount (km). Optionally a date (registration)
-        let regexKm = /(\s[0-9]+\s)/; //space<number>space regex for amount of kms
+        let regexKm = /(\s[0-9]+(\s|$))/; //space<number>space-or-endline regex for amount of kms
         let regexDate = /(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))/; //yyyy-mm-dd
 
         route = 'register';

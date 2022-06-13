@@ -14,10 +14,10 @@ export async function registerCommute(slackuser, registerdate, km) {
     }
 
     const db = dbTools.openDb();
-    if (!km) {
-        console.log('before result');
+
+    //#4: km can be zero for the register - step. This acts like an unregister
+    if (km === undefined) {
         let result = await getResult(db, slackuser).catch((err) => { return err;}); //We have pre-defined the error, so we just pass it through
-        console.log('after result' + JSON.stringify(result));
         if (!result.success) {
             return result; //Bubble the error
         }
@@ -31,12 +31,6 @@ export async function registerCommute(slackuser, registerdate, km) {
         } else {
             km = defaultKm;
         }
-    }
-    if (km < 3) {
-        return {
-            success: false,
-            msg: "the amount of km registered needs to be at least 3 km's for the timesheet (don't blame me)",
-        };
     }
 
     let insertResult = await persistRegistration(db, slackuser, dateToRegister, km);
