@@ -131,7 +131,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# Custom
-res/Fietsvergoeding.xlsx
+# Custom, full res folder is hidden
+res/
 dockertest
 db/bikeservice.db

@@ -1,8 +1,16 @@
 import Bolt from '@slack/bolt';
 import * as UserRepo from './user.js';
 import * as RegisterRepo from './register.js';
-import * as Export from './export.js';
+import * as CSV from './csvExport.js';
+import * as XLS from './excelExport.js';
 import { initializeDb } from './dbtools.js';
+import fs from 'fs';
+
+const commandText = `* Use 'setup' to set up a default amount of km. Use the total (there and back)
+* Use 'reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
+* Use 'csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
+* Use 'xls' to export the data for a given month to excel. Add a date in yyyy-mm-dd to get the export for that month. Bikebot will send the file to you.
+* Use 'help' to see the list of commands.`
 
 const app = new Bolt.App({
     token: process.env.SLACK_BOT_TOKEN,
@@ -107,7 +115,7 @@ app.command('/bike', async ({ command, ack, respond }) => {
 
         let month = requestDate.getMonth(); //may in normal-people-speak
         let year = requestDate.getFullYear();
-        let csv = await Export.exportAsCsv(command.user_id, month, year); //Month starts at 0 - js sucks
+        let csv = await CSV.exportAsCsv(command.user_id, month, year); //Month starts at 0 - js sucks
 
         if (!csv || csv == '') {
             route = 'error';
@@ -116,6 +124,42 @@ app.command('/bike', async ({ command, ack, respond }) => {
             route = 'csv';
             errormsg = csv;
         }
+    } else if (param.startsWith('xls')) {
+        extraparams = param.split(' ')[1]; //Get the first element after the first space
+
+        let requestDate = undefined;
+        if (extraparams) {
+            if (param.match(/(\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))/)) {
+                requestDate = new Date(param);
+            }
+        }
+
+        if (!requestDate) {
+            requestDate = new Date();
+        }
+
+        let xlsResult = await XLS.exportAsXlsx(command.user_id, command.user_name, requestDate); //Month starts at 0 - js sucks
+        if (xlsResult.success) {
+            let filepath = xlsResult.file;
+            try {
+                let uploaded = await app.client.files.upload({
+                    channels: command.user_id,
+                    file: fs.createReadStream(filepath),
+                    title: `your xls export for ${requestDate}`,
+                    filename: filepath, 
+                    filetype: 'xlsx',
+                });
+            } catch (err) {
+                route = 'error';
+                errormsg = err.message;
+            }
+
+            route = 'xls';
+        } else {
+            route = 'error';
+            errormsg = xlsResult.msg;
+        }
+
     } else if (param.startsWith('help')) {
         route = 'help';
     }
@@ -141,24 +185,22 @@ app.command('/bike', async ({ command, ack, respond }) => {
         } else if (route === 'help') {
             await respond({
                 response_type: 'ephemeral',
-                text: `* Use 'setup' to set up a default amount of km. Use the total (there and back)
-                * Use 'reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
-                * Use 'csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
-                * Use 'help' to see the list of commands.`,
+                text: commandText,
             });
         } else if (route == 'csv') {
             await respond({
                 response_type: 'ephemeral',
                 text: `\`\`\`${errormsg}\`\`\``, //Respond with the csv in a code block
             })
+        } else if (route == 'xls') {
+            await respond({
+                response_type: 'ephemeral', 
+                text: 'We have sent the file in a direct message',
+            })
         } else {
             await respond({
                 response_type: 'ephemeral',
-                text: `This command is not recognized. 
-            * Use 'setup' to set up a default amount of km. Use the total (there and back)
-            * Use 'reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
-            * Use 'csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
-            * Use 'help' to see the list of commands.`,
+                text: `This command is not recognized.\n${commandText}`,
             });
         }
     }
