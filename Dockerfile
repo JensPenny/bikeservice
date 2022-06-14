@@ -1,5 +1,5 @@
 # LTS version of node
-FROM node:16
+FROM node:16-alpine
 
 # Create the location where we will store the DB - not needed atm since we store the db in src
 # RUN mkdir /opt/bikeservice/
