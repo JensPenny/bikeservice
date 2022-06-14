@@ -1,0 +1,25 @@
+name: Manual Deploy
+
+env:
+  REGISTRY: "registry.digitalocean.com/pennybox"
+  IMAGE_NAME: "bikeservice"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  #todo: actual tests
+  
+  # build the image and tag it 
+  build_and_upload:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout master
+    - uses: actions/checkout@v3
+    
+    - name: Build container
+    - run: docker build . -f Dockerfile -t 
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
