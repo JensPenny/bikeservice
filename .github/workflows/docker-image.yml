@@ -7,7 +7,7 @@ on:
   
 env:
   REGISTRY: "registry.digitalocean.com/pennybox"
-  IMAGE_NAME: "penny/bikeservice"
+  IMAGE_NAME: "bikeservice"
 
 jobs:
   #todo: actual tests
