@@ -1,11 +1,10 @@
 name: Manual Deploy
-
+on:
+  workflow_dispatch:
+  
 env:
   REGISTRY: "registry.digitalocean.com/pennybox"
   IMAGE_NAME: "penny/bikeservice"
-
-on:
-  workflow_dispatch:
 
 jobs:
   #todo: actual tests
