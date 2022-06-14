@@ -1,6 +1,9 @@
 name: Manual Deploy
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        type: environment
   
 env:
   REGISTRY: "registry.digitalocean.com/pennybox"
