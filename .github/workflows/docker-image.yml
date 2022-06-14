@@ -2,7 +2,7 @@ name: Manual Deploy
 
 env:
   REGISTRY: "registry.digitalocean.com/pennybox"
-  IMAGE_NAME: "bikeservice"
+  IMAGE_NAME: "penny/bikeservice"
 
 on:
   workflow_dispatch:
@@ -19,7 +19,19 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Build container
-    - run: docker build . -f Dockerfile -t 
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: docker build . -f Dockerfile -t $(echo $IMAGE_NAME)
+    
+    - name: Tag container
+      run: docker tag $(echo $IMAGE_NAME) $(echo $REGISTRY)/$(echo $IMAGE_NAME)
+    
+    - name: install doctl
+      uses: digitalocean/action-doctl@v2
+      with: 
+        token: ${{ secrets.DO_ACCESS_TOKEN }}
+        
+    - name: Log in - short lived creds
+      run: doctl registry login --expiry-seconds 600
+      
+    - name: Push to registry
+      run: docker push $(echo $REGISTRY)/$(echo $IMAGE_NAME)
+  
