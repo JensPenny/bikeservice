@@ -1,0 +1,25 @@
+name: build_and_deploy_on_droplet
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  ssh_and_deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Use github sha to pin to 0.1.4
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@1d1b21ca96111b1eb4c03c21c14ebb971d2200f6
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}  
+          passphrase: ${{ secrets.PASSPHRASE }}
+          script: ls
