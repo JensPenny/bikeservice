@@ -20,5 +20,6 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSHKEY }}          
-          script: whoami
+          key: ${{ secrets.SSHKEY }}  
+          passphrase: ${{ secrets.PASSPHRASE }}
+          script: ls
