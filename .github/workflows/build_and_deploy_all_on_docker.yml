@@ -9,11 +9,7 @@ on:
         type: environment
 
 env: 
-  IMAGE_NAME: "penny/bikeservice"
-  SERVICE_NAME: $ {{secrets.SERVICE_NAME }}
-  APP_TOKEN: $ {{secrets.SLACK_APP_TOKEN }}
-  BOT_TOKEN: $ {{secrets.SLACK_BOT_TOKEN }}
-  SIGNING_SECRET: $ {{secrets.SLACK_SIGNING_SECRET }}
+  SCRIPT_NAME: "deploy_bikeservice_prod.sh"
   
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -33,4 +29,4 @@ jobs:
           key: ${{ secrets.SSHKEY }}  
           passphrase: ${{ secrets.PASSPHRASE }}
           # Todo - create bash script on the docker to actually update the different apps
-          script: ls
+          script: sh $(echo $SCRIPT_NAME)
