@@ -29,4 +29,4 @@ jobs:
           key: ${{ secrets.SSHKEY }}  
           passphrase: ${{ secrets.PASSPHRASE }}
           # Todo - create bash script on the docker to actually update the different apps
-          script: sh $(echo $SCRIPT_NAME)
+          script: sh $SCRIPT_NAME
