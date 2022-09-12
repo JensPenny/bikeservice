@@ -147,7 +147,11 @@ app.command('/bike', async ({ command, ack, respond }) => {
             requestDate = new Date();
         }
 
-        let xlsResult = await XLS.exportAsXlsx(command.user_id, command.user_name, requestDate); //Month starts at 0 - js sucks
+        //Fetch full user
+        let user = await app.client.users.profile.get({user: command.user_id});
+        var userFullName = user.profile.real_name;
+
+        let xlsResult = await XLS.exportAsXlsx(command.user_id, userFullName, requestDate); //Month starts at 0 - js sucks
         if (xlsResult.success) {
             let filepath = xlsResult.file;
             try {
