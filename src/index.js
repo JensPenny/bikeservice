@@ -6,7 +6,7 @@ import * as XLS from './excelExport.js';
 import { initializeDb } from './dbtools.js';
 import fs from 'fs';
 
-const commandText = `* Use 'setup' to set up a default amount of km. Use the total (there and back)
+const commandText = `* Use 'setup' to set up a default amount of km as the first argument, and a userNr as the second argument. Use the total (there and back) for km.
 * Use 'reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
 * Use 'csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
 * Use 'xls' to export the data for a given month to excel. Add a date in yyyy-mm-dd to get the export for that month. Bikebot will send the file to you.
