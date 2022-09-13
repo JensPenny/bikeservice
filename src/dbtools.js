@@ -67,7 +67,8 @@ function createTables(db) {
     const createUserTable = `create table user(
         slackuser varchar(50) primary key, 
         name text, 
-        defaultKm integer
+        defaultKm integer, 
+        werknemerNr text
         );`;
     const createRegisteryTable = `create table registry(
         rowid integer primary key AUTOINCREMENT, 

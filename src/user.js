@@ -12,7 +12,8 @@ export function setupUser(userObject) {
 function createOrReplaceUser(userObject) {
     const db = dbTools.openDb();
 
-    db.run('REPLACE INTO user (slackuser, name, defaultKm) VALUES(?, ?, ?)', [userObject.slackUser, userObject.name, userObject.defaultKm]);
+    db.run('REPLACE INTO user (slackuser, name, defaultKm, werknemerNr) VALUES(?, ?, ?, ?)', 
+        [userObject.slackUser, userObject.name, userObject.defaultKm, userObject.werknemerNr]);
     db.close();
     console.log('saved user ' + JSON.stringify(userObject));
     return true;

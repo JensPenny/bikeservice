@@ -48,35 +48,43 @@ app.command('/bike', async ({ command, ack, respond }) => {
 
     let route = '';
     let extraparams = '';
-    let errormsg = '';
+    let returnmsg = '';
     if (param.startsWith('setup')) {
         let matches = param.match(/setup [0-9]+/);
 
         if (!matches) {
             route = 'error';
-            errormsg = "Invalid use of setup. Attach a default distance in km for your two-way commute, like '/bike setup 6'"
+            returnmsg = "Invalid use of setup. Attach a default distance in km for your two-way commute, like '/bike setup 6'"
         } else {
             route = 'setup';
-            extraparams = param.split(' ')[1]; //Get the first element after the first space
+            let extraParamKm = param.split(' ')[1]; //Get the first element after the first space
+            let extraParamWnNr = param.split(' ')[2]; //Get the second element after a space - usernumber
 
-            let km = parseInt(extraparams);
+            let km = parseInt(extraParamKm);
+            
             let success = false;
             if (km < 3) {
-                console.log(`couldn't register user ${command.user_name} with default ${km} km`)
+                console.log(`couldn't register user ${command.user_name} with default ${km} km`);
                 route = 'error';
-                errormsg = "the amount of km registered needs to be at least 3 km's for the timesheet (don't blame me)";
+                returnmsg = "the amount of km registered needs to be at least 3 km's for the timesheet (don't blame me)";
+            } else if (km > 1000) {
+                console.log(`couldn't register user ${command.user_name} with default ${km} km. km too large`);
+                route = 'error';
+                returnmsg = `the amount of km's we found was ${km}. This is > 1000. Did you confuse your user number with the amount of km?`
             } else {
-                console.log('registering user with distance ' + extraparams);
+                console.log('registering user with distance ' + extraParamKm + ' and usernumber ' + extraParamWnNr);
                 success = UserRepo.setupUser({
                     name: command.user_name,
                     slackUser: command.user_id,
                     defaultKm: km,
+                    werknemerNr: extraParamWnNr
                 });   
+                returnmsg = `km: ${km} - werknemer: ${extraParamWnNr}`
                 
                 if (!success) {
                     route = 'error';
-                    errormsg = "Could not setup the user. Check the bot-logs, since there is something wrong with the persistence layer";
-                }    
+                    returnmsg = "Could not setup the user. Check the bot-logs, since there is something wrong with the persistence layer";
+                }
             }
         }
     } else if (param.startsWith('reg')) {
@@ -104,9 +112,9 @@ app.command('/bike', async ({ command, ack, respond }) => {
         let response = await RegisterRepo.registerCommute(command.user_id, registerDateAsParam, kmAsParam);
         if (!response.success) {
             route = 'error';
-            errormsg = response.msg;
+            returnmsg = response.msg;
         } else {
-            errormsg = response.msg; //abuse the errormsg as a normal msg
+            returnmsg = response.msg; //abuse the returnmsg as a normal msg
         }
     } else if (param.startsWith('csv')) {
         extraparams = param.split(' ')[1]; //Get the first element after the first space
@@ -128,10 +136,10 @@ app.command('/bike', async ({ command, ack, respond }) => {
 
         if (!csv || csv == '') {
             route = 'error';
-            errormsg = 'could not find anything to export';
+            returnmsg = 'could not find anything to export';
         } else {
             route = 'csv';
-            errormsg = csv;
+            returnmsg = csv;
         }
     } else if (param.startsWith('xls')) {
         extraparams = param.split(' ')[1]; //Get the first element after the first space
@@ -164,13 +172,13 @@ app.command('/bike', async ({ command, ack, respond }) => {
                 });
             } catch (err) {
                 route = 'error';
-                errormsg = err.message;
+                returnmsg = err.message;
             }
 
             route = 'xls';
         } else {
             route = 'error';
-            errormsg = xlsResult.msg;
+            returnmsg = xlsResult.msg;
         }
 
     } else if (param.startsWith('help')) {
@@ -178,22 +186,22 @@ app.command('/bike', async ({ command, ack, respond }) => {
     }
 
     if (route === 'error') {
-        console.log('found error: ' + errormsg);
+        console.log('found error: ' + returnmsg);
         await respond({
             response_type: 'ephemeral',
             icon_emoji: ':red_cross:',
-            text: errormsg,
+            text: returnmsg,
         })
     } else {
         if (route === 'setup') {
             await respond({
                 response_type: 'ephemeral',
-                text: `Your user has been set up. You can start registering commutes`,
+                text: `Your user has been set up with information: ${returnmsg}. You can start registering commutes`,
             });
         } else if (route === 'register') {
             await respond({
                 response_type: 'ephemeral',
-                text: `You have registered a commute: ${errormsg}`,
+                text: `You have registered a commute: ${returnmsg}`,
             });
         } else if (route === 'help') {
             await respond({
@@ -203,7 +211,7 @@ app.command('/bike', async ({ command, ack, respond }) => {
         } else if (route == 'csv') {
             await respond({
                 response_type: 'ephemeral',
-                text: `\`\`\`${errormsg}\`\`\``, //Respond with the csv in a code block
+                text: `\`\`\`${returnmsg}\`\`\``, //Respond with the csv in a code block
             })
         } else if (route == 'xls') {
             await respond({

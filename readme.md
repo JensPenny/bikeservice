@@ -10,6 +10,7 @@
 * chat:write    -   to be able to send messaged to users as bikebot
 * commands      -   to be able to receive the /bike - commands we listen on
 * files:write   -   to write excel-files. If you remove the xls-command you won't need this
+* user.profile:read - reads the user profile. Needed for the full name in the xls-command. 
 
 # Necessary environment variables  
 export SLACK_SIGNING_SECRET=<your-signing-secret>  
