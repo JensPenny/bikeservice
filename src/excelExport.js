@@ -7,6 +7,7 @@ export async function exportAsXlsx(user, name, requestDate) {
     let year = requestDate.getFullYear();
     let fullMonth = requestDate.toLocaleString('nl-BE', { month: 'long' })
     let registrations = await CSV.getPaddedRegistrations(user, month, year);
+    let werknemerNrRow = await CSV.getWerknemerNrFromDb(user);
 
     var workbook = new Excel.Workbook();
     try {
@@ -14,6 +15,10 @@ export async function exportAsXlsx(user, name, requestDate) {
         let sheet = workbook.getWorksheet(1);
         let currentRow = 17;
 
+        if (werknemerNrRow.success) {
+            sheet.getRow(12).getCell('C').value = werknemerNrRow.payload;
+            sheet.getRow(12).commit();    
+        }
         sheet.getRow(13).getCell('C').value = name;
         sheet.getRow(13).commit();
         sheet.getRow(14).getCell('C').value = fullMonth;

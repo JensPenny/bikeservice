@@ -1,6 +1,6 @@
 # Features
 * creates a slack-bot with following commands:  
-    * Use '/bike setup' to set up a default amount of km. Use the total (there and back)
+    * Use '/bike setup' to set up a default amount of km as the first argument, and a userNr as the second argument. Use the total (there and back) for km.
     * Use '/bike reg or register to register a commute. Add a km amount to overwrite the default km. Add a date in yyyy-mm-dd to overwrite the date
     * Use '/bike csv' to export the data for a given month to csv. Add a date in yyyy-mm-dd to get the export for that month in particular.
     * use '/bike xls' to export the data to an excel - file. You'll have to provide the template yourself. 
@@ -10,6 +10,7 @@
 * chat:write    -   to be able to send messaged to users as bikebot
 * commands      -   to be able to receive the /bike - commands we listen on
 * files:write   -   to write excel-files. If you remove the xls-command you won't need this
+* user.profile:read - reads the user profile. Needed for the full name in the xls-command. 
 
 # Necessary environment variables  
 export SLACK_SIGNING_SECRET=<your-signing-secret>  

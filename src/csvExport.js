@@ -68,3 +68,30 @@ async function getFromDb(slackuser) {
         });
     });
 }
+
+export async function getWerknemerNrFromDb(slackuser) {
+    const db = dbTools.openDb();
+    return new Promise((resolve, reject) => {
+        db.get("SELECT werknemerNr FROM user WHERE slackuser = ?", [slackuser], (err, row) => {
+            if (err) {
+                return reject({
+                    success: false,
+                    msg: "Couldn't query werknemerNr: " + err,
+                    payload: undefined,        
+                });
+            };
+            if (!row) {
+                return reject({
+                    success: false, 
+                    msg: "Couldn't query werknemerNr",
+                    payload: undefined,
+                })
+            }
+            return resolve({
+                success: true, 
+                payload: row.werknemerNr,    
+            });
+        });
+
+    })
+}
