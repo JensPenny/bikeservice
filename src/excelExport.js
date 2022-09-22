@@ -23,6 +23,9 @@ export async function exportAsXlsx(user, name, requestDate) {
         sheet.getRow(13).commit();
         sheet.getRow(14).getCell('C').value = fullMonth;
         sheet.getRow(14).commit();
+
+        sheet.getRow(54).getCell('B').value = requestDate.toLocaleDateString('nl-BE');
+        sheet.getRow(54).commit();
         for (const reg of registrations) {
             let row = sheet.getRow(currentRow);
             row.getCell('B').value = reg[0];
@@ -37,7 +40,7 @@ export async function exportAsXlsx(user, name, requestDate) {
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
         }
-        let exportFileName = `${dir}/${user}-${month}-${year}.xlsx`;
+        let exportFileName = `${dir}/${user}-${month + 1}-${year}.xlsx`;
 
         await workbook.xlsx.writeFile(exportFileName,);
 
